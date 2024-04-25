@@ -1,0 +1,103 @@
+/* General styling for the entire page */
+body, h1, button {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+h1{
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+
+/* Header styling */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #f0f0f0; /* Light grey background for the header */
+    width: 100%; /* Ensure the header spans the full width */
+}
+
+h1 {
+    font-size: 24px; /* Suitable font size for the header */
+}
+
+#connect-btn {
+    padding: 10px 20px; /* Padding around the text in the button */
+    background-color: #007BFF; /* Bootstrap primary button color */
+    margin-right: 50px;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 1s ease;
+}   
+
+#connect-btn:hover {
+    background-color: #238bf9; /* Darker shade on hover */
+    transform: scale(1.2);
+}
+
+#connect-btn.disconnect {
+    background-color: #4400ff; /* Red background for disconnect */
+}
+
+/* Main content styling */
+#main-content {
+    padding: 20px;
+}
+
+/* Ensure the header stays at the top */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+/* Padding for body to avoid overlap with the fixed header */
+body {
+    padding-top: 60px; /* Adjust based on the height of your header */
+}
+
+#data-box{
+    width: 700px;
+}
+
+#accelChart {
+    width: 100% !important;  /* Ensures the canvas fills the container width */
+    height: 45vh !important; /* Sets the height of the canvas */
+}
+
+#gyroChart {
+    width: 100% !important;  /* Ensures the canvas fills the container width */
+    height: 45vh !important; /* Sets the height of the canvas */
+}
+
+#record-btn{
+    width: 16px;
+    height: 16px;
+    background-color: red;
+    border-radius: 20px;
+    border-color: transparent;
+    margin-right: 20px;
+    transition: .5s ease;
+    
+}
+
+#record-btn.stop{
+    border-radius: 0;
+}
+
+#record-btn:hover{
+    transform: scale(1.2);
+    cursor: pointer;
+    background-color: #ff4444;
+}
+
+.btn-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
