@@ -205,10 +205,9 @@ document.getElementById('connect-btn').addEventListener('click', function() {
                                 .join(', ');
                 const data = parseBLEPacket(lastValue);
                 let vector = Math.sqrt(data.ax * data.ax + data.ay * data.ay + data.az * data.az) - 9800;
-                //vector = vector < 0 ? vector * .7 : vector;
-                velocity = (velocity + vector*(minInterval/100000))*.97; 
-                distance = (distance + velocity*(minInterval/100000))*.98;
-                dist2 = (dist2 + distance*(minInterval/100000))*.97;
+                velocity = (velocity + vector*(minInterval/1000000))*.97; 
+                distance = (distance + velocity*(minInterval/1000000))*.98;
+                dist2 = (dist2 + distance*(minInterval/1000000))*.97;
                 distance = distance > 0 ? distance : 0;
                 lastDTS = data.timestamp;
                 vectorLast = vector;
