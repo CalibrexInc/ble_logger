@@ -75,6 +75,34 @@ body {
     height: 45vh !important; /* Sets the height of the canvas */
 }
 
+#sign-in{
+    background-color: white; /* White background */
+    color: black;            /* Black text */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;     /* Pill shape */
+    outline: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    margin-right: 50px;
+    cursor: pointer;
+    transition: 1s ease;
+}
+
+#sign-in:hover {
+    transform: scale(1.2);
+}
+
+#sign-in .material-icons {
+    margin-left: 10px; /* Space between text and icon */
+    font-size: 20px;   /* Icon size */
+  }
+
+
 #record-btn{
     width: 16px;
     height: 16px;

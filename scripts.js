@@ -15,6 +15,7 @@ let dist2 = 0;
 let vectorLast = 0;
 
 
+
 // Initialize chart data
 const data = {
     labels: [], // Timestamps
@@ -200,7 +201,7 @@ document.getElementById('connect-btn').addEventListener('click', function() {
             characteristic.addEventListener('characteristicvaluechanged', (event) => {
                 const value = event.target.value;
                 // Convert the Uint8Array to a string of hex numbers separated by commas
-                lastValue = Array.from(new Uint8Array(value.buffer))
+                let lastValue = Array.from(new Uint8Array(value.buffer))
                                 .map(byte => byte.toString(16).padStart(2, '0'))
                                 .join(', ');
                 const data = parseBLEPacket(lastValue);
@@ -240,7 +241,6 @@ function startRecording(){
         recButton.classList.remove('stop');
         isRecording = false;
         downloadCSV(sensorData);
-
     }
 }
 
@@ -311,6 +311,20 @@ function clearData() {
     sensorData = [];  // Clears the array by reinitializing it
 }
 
+/*function uploadFile(blob, filename) {
+    const storageRef = storage.ref();
+    const fileRef = storageRef.child('exercise-data/' + filename);
+    
+    // Upload the file
+    fileRef.put(blob).then((snapshot) => {
+      console.log('Uploaded a blob or file!');
+      return true;
+    }).catch((error) => {
+      console.error('Upload failed:', error);
+      return false;
+    });
+  }*/
+
 function downloadCSV(sensorData) {
     if(sensorData.length < 1000){
         return;
@@ -350,22 +364,30 @@ function downloadCSV(sensorData) {
 
     // Create a Blob with the CSV data
     const blob = new Blob([csvString], { type: 'text/csv' });
+    const uploaded = false;//uploadFile(blob, csvName);
 
-    // Create an invisible anchor element to trigger the download
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', csvName);
-    link.style.visibility = 'hidden';
+    if(!uploaded){
+        // Create an invisible anchor element to trigger the download
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', csvName);
+        link.style.visibility = 'hidden';
 
-    // Append the link to the document and trigger the download
-    document.body.appendChild(link);
-    link.click();
+        // Append the link to the document and trigger the download
+        document.body.appendChild(link);
+        link.click();
 
-    // Clean up: remove the link and revoke the URL
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+        // Clean up: remove the link and revoke the URL
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
 }
+
+
+
+
+
 
 
 

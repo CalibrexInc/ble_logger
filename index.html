@@ -6,13 +6,17 @@
         <title>Calibrex BLE Logger</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="styles.css">        
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://apis.google.com/js/api.js"></script>
+
 
     </head>
     <body>
         <header>
             <h1>Calibrex Logger</h1>
             <div class="btn-container">
+                <button id="sign-in" style="display: none">Sign In <span class="material-icons">login</span></button>
                 <button id="record-btn"></button>
                 <button id="connect-btn">Connect</button>
             </div>
@@ -20,7 +24,7 @@
         <div id="main-content">
             <canvas id="accelChart"></canvas>
             <canvas id="gyroChart"></canvas>
-        </div>     
-        <script src="scripts.js" async defer></script>
+        </div>      
+        <script type="module" src="scripts.js" async defer></script>
     </body>
 </html>
