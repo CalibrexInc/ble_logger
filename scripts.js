@@ -1,8 +1,10 @@
+import LowPassFilter from "./filter.js";
+
 
 let bluetoothDevice = null;
 let isConnected = false;
 let isRecording = false;
-let maxAccel = 30000;
+let maxAccel = 40000;
 let maxGyro = 40000;
 let sensorData = [];
 let velocity = 0;
@@ -13,6 +15,9 @@ const minInterval = 50000;
 var lastTS = 0;
 let dist2 = 0;
 let vectorLast = 0;
+let veloBuffer = [];
+
+const lpfilter = new LowPassFilter(20, 5);
 
 
 
@@ -163,11 +168,10 @@ function clearChartData() {
         // Update the chart to reflect the changes
         gyroChart.update();        
     }
+    
 }
 
 document.getElementById('record-btn').addEventListener('click', startRecording);
-
-
 
 document.getElementById('connect-btn').addEventListener('click', function() {
     if(!isConnected){        
@@ -206,14 +210,20 @@ document.getElementById('connect-btn').addEventListener('click', function() {
                                 .join(', ');
                 const data = parseBLEPacket(lastValue);
                 let vector = Math.sqrt(data.ax * data.ax + data.ay * data.ay + data.az * data.az) - 9800;
-                velocity = (velocity + vector*(minInterval/1000000))*.97; 
-                distance = (distance + velocity*(minInterval/1000000))*.98;
-                dist2 = (dist2 + distance*(minInterval/1000000))*.97;
-                distance = distance > 0 ? distance : 0;
-                lastDTS = data.timestamp;
-                vectorLast = vector;
+                veloBuffer.push(vector);
+                if(veloBuffer.length > 100){
+                    veloBuffer.shift();
+                }
+                vector = veloBuffer.reduce((acc, val) => acc+val, 0)/veloBuffer.length;
+                vector = Math.abs(vector) < 100 ? 0 : vector;
+                velocity = vector > 0 ? velocity + vector : velocity * .97;
+                
+                
+            
+
+                //vector = lpfilter.filter(vector);
                 //addData(data.ax,data.ay,data.az,data.gx, data.gy, data.gz, data.timestamp);
-                addData(vector,velocity,distance*4,data.gx,data.gy,data.gz,data.timestamp);
+                addData(vector*10,velocity,0,data.gx,data.gy,data.gz,data.timestamp);
             });
             return characteristic.startNotifications();
         })
@@ -309,21 +319,10 @@ function updateData(ax, ay, az, gx, gy, gz, timestamp) {
 
 function clearData() {
     sensorData = [];  // Clears the array by reinitializing it
+    lastTS = 0;
 }
 
-/*function uploadFile(blob, filename) {
-    const storageRef = storage.ref();
-    const fileRef = storageRef.child('exercise-data/' + filename);
-    
-    // Upload the file
-    fileRef.put(blob).then((snapshot) => {
-      console.log('Uploaded a blob or file!');
-      return true;
-    }).catch((error) => {
-      console.error('Upload failed:', error);
-      return false;
-    });
-  }*/
+
 
 function downloadCSV(sensorData) {
     if(sensorData.length < 1000){
