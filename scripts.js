@@ -150,10 +150,16 @@ document.getElementById('connect-btn').addEventListener('click', function() {
             return server.getPrimaryService('0000aaaa-ead2-11e7-80c1-9a214cf093ae');
         })
         .then(service => {
-            return service.getCharacteristic('00006666-ead3-11e7-80c1-9a214cf093ae');
+            return Promise.all([
+                service.getCharacteristic('00006666-ead3-11e7-80c1-9a214cf093ae'),
+                service.getCharacteristic('00001111-ead4-11e7-80c1-9a214cf093ae')
+            ]);
         })
-        .then(characteristic => {
-            characteristic.addEventListener('characteristicvaluechanged', (event) => {
+        .then(characteristics => {
+
+            const imu_char = characteristics[0];
+            const btn_char = characteristics[1];
+            imu_char.addEventListener('characteristicvaluechanged', (event) => {
                 const value = event.target.value;
                 // Convert the Uint8Array to a string of hex numbers separated by commas
                 let lastValue = Array.from(new Uint8Array(value.buffer))
@@ -161,13 +167,23 @@ document.getElementById('connect-btn').addEventListener('click', function() {
                                 .join(', ');
                 const data = parseBLEPacket(lastValue);       
                 let output = rda.countReps(data);
-                addData(output.vector,output.velocity,output.diff,data.gx,data.gy,data.gz,data.timestamp);
+                addData(output.diffCount * 100,output.velocity,output.diff,data.gx,data.gy,data.gz,data.timestamp);
                 if(reps != rda.getReps()){
                     reps = rda.getReps();
                     setReps('reps', reps);
                 }
             });
-            return characteristic.startNotifications();
+
+            btn_char.addEventListener('characteristicvaluechanged', (event) => {
+                // Set reps to 0 when the value is changed for characteristic2
+                rda.clearReps();
+                console.log('Reps set to 0');
+            });
+
+            return Promise.all([
+                imu_char.startNotifications(),
+                btn_char.startNotifications()
+            ]);
         })
         .then(() => {
             console.log('Notifications have been started.');

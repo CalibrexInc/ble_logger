@@ -22,18 +22,19 @@ class RDA{
         this.max = this.velocity > this.max ? this.velocity : this.max;
         this.min = this.velocity > this.max ? this.velocity : this.min;
         this.min = this.velocity < this.min ? this.velocity : this.min;
+        this.diffCount = this.diff > this.threshold ? this.diffCount + 1 : 0;
+        this.diffCount = this.max > 10000 ? 0 : this.diffCount;
         this.diff = this.max - this.min;
         this.diff = this.diff < this.threshold ? 0 : this.diff;
-        this.testy = ( (this.testy + 1/4 * vector * vector/50000)+this.testy)*.35;
         
         
         this.diffLast = this.diff;
-        if(this.min < 0 && this.velocity > 0){    
-            this.reps = this.diff > this.threshold ? this.reps + 1 : this.reps;
+        if(this.min < 0 && this.velocity > 50){    
+            this.reps = this.diffCount > 50 ? this.reps + 1 : this.reps;
             this.min = 0;
             this.max = 0;
         }
-        return {vector: smooth, velocity: this.velocity, diff: this.diff, reps: this.reps, diffCount: this.diffCount * this.diff/2000, testy: this.testy};
+        return {vector: this.smooth, velocity: this.velocity, diff: this.diff, reps: this.reps, diffCount: this.diffCount * this.diff/2000};
     }
     getReps(){
         return this.reps;
@@ -48,11 +49,10 @@ class RDA{
         this.velocity = 0;
         this.max = 0; 
         this.min = 0;
-        this.threshold = 3000;
+        this.threshold = 4300;
         this.buffer = [];
         this.diffCount = 0;
         this.zeroCount = 0;
-        this.testy = 0;
     }
 
     clearReps(){
