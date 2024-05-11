@@ -1,5 +1,4 @@
-import LowPassFilter from "./filter.js";
-
+import RDA from './RDA.js'
 
 let bluetoothDevice = null;
 let isConnected = false;
@@ -7,19 +6,12 @@ let isRecording = false;
 let maxAccel = 40000;
 let maxGyro = 40000;
 let sensorData = [];
-let velocity = 0;
-let distance = 0;
-let lastDTS = 0;
 const maxDataPoints = 300;
 const minInterval = 50000;
 var lastTS = 0;
-let dist2 = 0;
-let vectorLast = 0;
-let veloBuffer = [];
+var reps = 0;
 
-const lpfilter = new LowPassFilter(20, 5);
-
-
+const rda = new RDA();
 
 // Initialize chart data
 const data = {
@@ -43,26 +35,26 @@ const data = {
     ]
 };
 
-const gyrodata = {
-    labels: [], // Timestamps
-    datasets: [
-        {
-            label: 'Gx',
-            borderColor: 'rgb(255, 99, 132)',
-            data: []
-        },
-        {
-            label: 'Gy',
-            borderColor: 'rgb(54, 162, 235)',
-            data: []
-        },
-        {
-            label: 'Gz',
-            borderColor: 'rgb(75, 192, 192)',
-            data: []
-        }
-    ]
-};
+// const gyrodata = {
+//     labels: [], // Timestamps
+//     datasets: [
+//         {
+//             label: 'Gx',
+//             borderColor: 'rgb(255, 99, 132)',
+//             data: []
+//         },
+//         {
+//             label: 'Gy',
+//             borderColor: 'rgb(54, 162, 235)',
+//             data: []
+//         },
+//         {
+//             label: 'Gz',
+//             borderColor: 'rgb(75, 192, 192)',
+//             data: []
+//         }
+//     ]
+// };
 
 const config = {
     type: 'line',
@@ -83,31 +75,31 @@ const config = {
     }
 };
 
-const config2 = {
-    type: 'line',
-    data: gyrodata,
-    options: {
-        spanGaps: true, 
-        animation: false,  // Disable animations for performance
-        scales: {
-            x: {
-                type: 'linear',
-                position: 'bottom'
-            },
-            y: {
-                min: -maxGyro,
-                max: maxGyro
-            }
-        }
-    }
-};
+// const config2 = {
+//     type: 'line',
+//     data: gyrodata,
+//     options: {
+//         spanGaps: true, 
+//         animation: false,  // Disable animations for performance
+//         scales: {
+//             x: {
+//                 type: 'linear',
+//                 position: 'bottom'
+//             },
+//             y: {
+//                 min: -maxGyro,
+//                 max: maxGyro
+//             }
+//         }
+//     }
+// };
 
 
 // Create the chart
 const ctx = document.getElementById('accelChart').getContext('2d');
-const ctx2 = document.getElementById('gyroChart').getContext('2d');
+//const ctx2 = document.getElementById('gyroChart').getContext('2d');
 const accelChart = new Chart(ctx, config);
-const gyroChart = new Chart(ctx2, config2);
+//const gyroChart = new Chart(ctx2, config2);
 
 
 
@@ -118,30 +110,30 @@ function addData(ax, ay, az, gx, gy, gz, timestamp) {
     if(timestamp - lastTS > minInterval){
         // Add new data points to the chart
         accelChart.data.labels.push(timestamp);
-        gyroChart.data.labels.push(timestamp);
+        // gyroChart.data.labels.push(timestamp);
         accelChart.data.datasets[0].data.push(ax);
         accelChart.data.datasets[1].data.push(ay);
         accelChart.data.datasets[2].data.push(az);
-        gyroChart.data.datasets[0].data.push(gx);
-        gyroChart.data.datasets[1].data.push(gy);
-        gyroChart.data.datasets[2].data.push(gz);
+        // gyroChart.data.datasets[0].data.push(gx);
+        // gyroChart.data.datasets[1].data.push(gy);
+        // gyroChart.data.datasets[2].data.push(gz);
 
         // Check if the number of data points exceeds the maximum allowed
         if (accelChart.data.labels.length > maxDataPoints) {
             // Remove the oldest data point
             accelChart.data.labels.shift();
-            gyroChart.data.labels.shift();
+            // gyroChart.data.labels.shift();
             accelChart.data.datasets.forEach((dataset) => {
                 dataset.data.shift();
             });
-            gyroChart.data.datasets.forEach((dataset) => {
-                dataset.data.shift();
-            });
+            // gyroChart.data.datasets.forEach((dataset) => {
+            //     dataset.data.shift();
+            // });
         }
 
         // Update the chart to reflect the new data points
         accelChart.update();
-        gyroChart.update();
+        //gyroChart.update();
         lastTS = timestamp;
     }
 }
@@ -158,16 +150,16 @@ function clearChartData() {
         // Update the chart to reflect the changes
         accelChart.update();        
     }
-    if (gyroChart) {
-        // Clear data arrays for each dataset
-        //gyroChart.data.labels = []; // Clear the axis labels
-        gyroChart.data.datasets.forEach((dataset) => {
-            dataset.data = []; // Clear the data points
-        });
+    // if (gyroChart) {
+    //     // Clear data arrays for each dataset
+    //     //gyroChart.data.labels = []; // Clear the axis labels
+    //     gyroChart.data.datasets.forEach((dataset) => {
+    //         dataset.data = []; // Clear the data points
+    //     });
         
-        // Update the chart to reflect the changes
-        gyroChart.update();        
-    }
+    //     // Update the chart to reflect the changes
+    //     gyroChart.update();        
+    // }
     
 }
 
@@ -208,22 +200,13 @@ document.getElementById('connect-btn').addEventListener('click', function() {
                 let lastValue = Array.from(new Uint8Array(value.buffer))
                                 .map(byte => byte.toString(16).padStart(2, '0'))
                                 .join(', ');
-                const data = parseBLEPacket(lastValue);
-                let vector = Math.sqrt(data.ax * data.ax + data.ay * data.ay + data.az * data.az) - 9800;
-                veloBuffer.push(vector);
-                if(veloBuffer.length > 100){
-                    veloBuffer.shift();
+                const data = parseBLEPacket(lastValue);       
+                let output = rda.countReps(data);
+                addData(output.vector,output.velocity,output.diff,data.gx,data.gy,data.gz,data.timestamp);
+                if(reps != rda.getReps()){
+                    reps = rda.getReps();
+                    setReps('reps', reps);
                 }
-                vector = veloBuffer.reduce((acc, val) => acc+val, 0)/veloBuffer.length;
-                vector = Math.abs(vector) < 100 ? 0 : vector;
-                velocity = vector > 0 ? velocity + vector : velocity * .97;
-                
-                
-            
-
-                //vector = lpfilter.filter(vector);
-                //addData(data.ax,data.ay,data.az,data.gx, data.gy, data.gz, data.timestamp);
-                addData(vector*10,velocity,0,data.gx,data.gy,data.gz,data.timestamp);
             });
             return characteristic.startNotifications();
         })
@@ -380,6 +363,15 @@ function downloadCSV(sensorData) {
         // Clean up: remove the link and revoke the URL
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+    }
+}
+
+function setReps(id, value) {
+    var element = document.getElementById(id);
+    if (element && element.tagName.toLowerCase() === 'h1') {
+        element.textContent = value;
+    } else {
+        console.error("Element with ID '" + id + "' is either not found or not an <h1> element.");
     }
 }
 

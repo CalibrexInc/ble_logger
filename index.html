@@ -15,15 +15,18 @@
     <body>
         <header>
             <h1>Calibrex Logger</h1>
-            <div class="btn-container">
-                <button id="sign-in" style="display: none">Sign In <span class="material-icons">login</span></button>
+            <div id="repcount">
+                <label id="rep-label">Reps</label>
+                <h1 id="reps">0</h1>
+            </div>
+            <div class="btn-container">                
                 <button id="record-btn"></button>
                 <button id="connect-btn">Connect</button>
             </div>
         </header>
         <div id="main-content">
             <canvas id="accelChart"></canvas>
-            <canvas id="gyroChart"></canvas>
+            <!--<canvas id="gyroChart"></canvas>-->
         </div>      
         <script type="module" src="scripts.js" async defer></script>
     </body>
