@@ -106,6 +106,7 @@ const accelChart = new Chart(ctx, config);
 function addData(ax, ay, az, gx, gy, gz, timestamp) {
     if(isRecording){
         updateData(ax, ay, az, gx, gy, gz, timestamp);
+        console.log('Vector: ' + ax);
     }
     if(timestamp - lastTS > minInterval){
         // Add new data points to the chart
