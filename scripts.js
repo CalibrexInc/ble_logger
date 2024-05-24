@@ -167,7 +167,7 @@ document.getElementById('connect-btn').addEventListener('click', function() {
                                 .join(', ');
                 const data = parseBLEPacket(lastValue);       
                 let output = rda.countReps(data);
-                addData(output.diffCount * 100,output.velocity,output.diff,data.gx,data.gy,data.gz,data.timestamp);
+                addData(output.vector,output.velocity,output.diff,data.gx,data.gy,data.gz,data.timestamp);
                 if(reps != rda.getReps()){
                     reps = rda.getReps();
                     setReps('reps', reps);
@@ -277,6 +277,7 @@ function updateData(ax, ay, az, gx, gy, gz, timestamp) {
 }
 
 function clearData() {
+    rda.reset();
     sensorData = [];  // Clears the array by reinitializing it
     lastTS = 0;
 }

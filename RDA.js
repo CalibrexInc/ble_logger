@@ -26,6 +26,8 @@ class RDA{
         this.diffCount = this.max > 10000 ? 0 : this.diffCount;
         this.diff = this.max - this.min;
         this.diff = this.diff < this.threshold ? 0 : this.diff;
+        this.testy = smooth > 0 ? 1/4 * smooth + this.testy : smooth + this.testy;
+        this.testy = this.testy < 1000 ? this.testy * .8 : this.testy;
         
         
         this.diffLast = this.diff;
@@ -34,7 +36,7 @@ class RDA{
             this.min = 0;
             this.max = 0;
         }
-        return {vector: this.smooth, velocity: this.velocity, diff: this.diff, reps: this.reps, diffCount: this.diffCount * this.diff/2000};
+        return {vector: this.smooth, velocity: this.velocity, diff: this.diff, reps: this.reps, test: 0};
     }
     getReps(){
         return this.reps;
@@ -53,6 +55,7 @@ class RDA{
         this.buffer = [];
         this.diffCount = 0;
         this.zeroCount = 0;
+        this.testy = 0;
     }
 
     clearReps(){
