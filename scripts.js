@@ -35,26 +35,7 @@ const data = {
     ]
 };
 
-// const gyrodata = {
-//     labels: [], // Timestamps
-//     datasets: [
-//         {
-//             label: 'Gx',
-//             borderColor: 'rgb(255, 99, 132)',
-//             data: []
-//         },
-//         {
-//             label: 'Gy',
-//             borderColor: 'rgb(54, 162, 235)',
-//             data: []
-//         },
-//         {
-//             label: 'Gz',
-//             borderColor: 'rgb(75, 192, 192)',
-//             data: []
-//         }
-//     ]
-// };
+
 
 const config = {
     type: 'line',
@@ -75,24 +56,7 @@ const config = {
     }
 };
 
-// const config2 = {
-//     type: 'line',
-//     data: gyrodata,
-//     options: {
-//         spanGaps: true, 
-//         animation: false,  // Disable animations for performance
-//         scales: {
-//             x: {
-//                 type: 'linear',
-//                 position: 'bottom'
-//             },
-//             y: {
-//                 min: -maxGyro,
-//                 max: maxGyro
-//             }
-//         }
-//     }
-// };
+
 
 
 // Create the chart
@@ -111,13 +75,11 @@ function addData(ax, ay, az, gx, gy, gz, timestamp) {
     if(timestamp - lastTS > minInterval){
         // Add new data points to the chart
         accelChart.data.labels.push(timestamp);
-        // gyroChart.data.labels.push(timestamp);
+
         accelChart.data.datasets[0].data.push(ax);
         accelChart.data.datasets[1].data.push(ay);
         accelChart.data.datasets[2].data.push(az);
-        // gyroChart.data.datasets[0].data.push(gx);
-        // gyroChart.data.datasets[1].data.push(gy);
-        // gyroChart.data.datasets[2].data.push(gz);
+
 
         // Check if the number of data points exceeds the maximum allowed
         if (accelChart.data.labels.length > maxDataPoints) {
@@ -127,14 +89,10 @@ function addData(ax, ay, az, gx, gy, gz, timestamp) {
             accelChart.data.datasets.forEach((dataset) => {
                 dataset.data.shift();
             });
-            // gyroChart.data.datasets.forEach((dataset) => {
-            //     dataset.data.shift();
-            // });
         }
 
         // Update the chart to reflect the new data points
         accelChart.update();
-        //gyroChart.update();
         lastTS = timestamp;
     }
 }
@@ -230,6 +188,7 @@ function startRecording(){
     const recButton = document.getElementById('record-btn');
     if(!isRecording){        
         recButton.classList.add('stop');
+        clearData();
         isRecording = true;
     }else{
         recButton.classList.remove('stop');
