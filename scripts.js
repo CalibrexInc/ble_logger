@@ -35,26 +35,7 @@ const data = {
     ]
 };
 
-// const gyrodata = {
-//     labels: [], // Timestamps
-//     datasets: [
-//         {
-//             label: 'Gx',
-//             borderColor: 'rgb(255, 99, 132)',
-//             data: []
-//         },
-//         {
-//             label: 'Gy',
-//             borderColor: 'rgb(54, 162, 235)',
-//             data: []
-//         },
-//         {
-//             label: 'Gz',
-//             borderColor: 'rgb(75, 192, 192)',
-//             data: []
-//         }
-//     ]
-// };
+
 
 const config = {
     type: 'line',
@@ -75,24 +56,7 @@ const config = {
     }
 };
 
-// const config2 = {
-//     type: 'line',
-//     data: gyrodata,
-//     options: {
-//         spanGaps: true, 
-//         animation: false,  // Disable animations for performance
-//         scales: {
-//             x: {
-//                 type: 'linear',
-//                 position: 'bottom'
-//             },
-//             y: {
-//                 min: -maxGyro,
-//                 max: maxGyro
-//             }
-//         }
-//     }
-// };
+
 
 
 // Create the chart
@@ -111,13 +75,11 @@ function addData(ax, ay, az, gx, gy, gz, timestamp) {
     if(timestamp - lastTS > minInterval){
         // Add new data points to the chart
         accelChart.data.labels.push(timestamp);
-        // gyroChart.data.labels.push(timestamp);
+
         accelChart.data.datasets[0].data.push(ax);
         accelChart.data.datasets[1].data.push(ay);
         accelChart.data.datasets[2].data.push(az);
-        // gyroChart.data.datasets[0].data.push(gx);
-        // gyroChart.data.datasets[1].data.push(gy);
-        // gyroChart.data.datasets[2].data.push(gz);
+
 
         // Check if the number of data points exceeds the maximum allowed
         if (accelChart.data.labels.length > maxDataPoints) {
@@ -127,14 +89,10 @@ function addData(ax, ay, az, gx, gy, gz, timestamp) {
             accelChart.data.datasets.forEach((dataset) => {
                 dataset.data.shift();
             });
-            // gyroChart.data.datasets.forEach((dataset) => {
-            //     dataset.data.shift();
-            // });
         }
 
         // Update the chart to reflect the new data points
         accelChart.update();
-        //gyroChart.update();
         lastTS = timestamp;
     }
 }
@@ -192,10 +150,16 @@ document.getElementById('connect-btn').addEventListener('click', function() {
             return server.getPrimaryService('0000aaaa-ead2-11e7-80c1-9a214cf093ae');
         })
         .then(service => {
-            return service.getCharacteristic('00006666-ead3-11e7-80c1-9a214cf093ae');
+            return Promise.all([
+                service.getCharacteristic('00006666-ead3-11e7-80c1-9a214cf093ae'),
+                service.getCharacteristic('00001111-ead4-11e7-80c1-9a214cf093ae')
+            ]);
         })
-        .then(characteristic => {
-            characteristic.addEventListener('characteristicvaluechanged', (event) => {
+        .then(characteristics => {
+
+            const imu_char = characteristics[0];
+            const btn_char = characteristics[1];
+            imu_char.addEventListener('characteristicvaluechanged', (event) => {
                 const value = event.target.value;
                 // Convert the Uint8Array to a string of hex numbers separated by commas
                 let lastValue = Array.from(new Uint8Array(value.buffer))
@@ -203,13 +167,23 @@ document.getElementById('connect-btn').addEventListener('click', function() {
                                 .join(', ');
                 const data = parseBLEPacket(lastValue);       
                 let output = rda.countReps(data);
-                addData(output.vector,output.velocity,output.diff,data.gx,data.gy,data.gz,data.timestamp);
+                addData(output.diffCount * 100,output.velocity,output.diff,data.gx,data.gy,data.gz,data.timestamp);
                 if(reps != rda.getReps()){
                     reps = rda.getReps();
                     setReps('reps', reps);
                 }
             });
-            return characteristic.startNotifications();
+
+            btn_char.addEventListener('characteristicvaluechanged', (event) => {
+                // Set reps to 0 when the value is changed for characteristic2
+                rda.clearReps();
+                console.log('Reps set to 0');
+            });
+
+            return Promise.all([
+                imu_char.startNotifications(),
+                btn_char.startNotifications()
+            ]);
         })
         .then(() => {
             console.log('Notifications have been started.');
@@ -230,6 +204,7 @@ function startRecording(){
     const recButton = document.getElementById('record-btn');
     if(!isRecording){        
         recButton.classList.add('stop');
+        clearData();
         isRecording = true;
     }else{
         recButton.classList.remove('stop');
