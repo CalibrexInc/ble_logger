@@ -75,7 +75,7 @@ body {
     height: 45vh !important; /* Sets the height of the canvas */
 }
 
-#repcount{
+.repcount{
     display: flex;
     flex-direction: column;
     align-items: center;

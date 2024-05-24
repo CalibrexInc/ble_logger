@@ -170,13 +170,17 @@ document.getElementById('connect-btn').addEventListener('click', function() {
                 addData(output.vector,output.velocity,output.diff,data.gx,data.gy,data.gz,data.timestamp);
                 if(reps != rda.getReps()){
                     reps = rda.getReps();
+                    let velocity = rda.velocity/100;
+                    let vShow = Number(velocity).toPrecision(4) + ' m/s';
                     setReps('reps', reps);
+                    setReps('velo', vShow);
                 }
             });
 
             btn_char.addEventListener('characteristicvaluechanged', (event) => {
                 // Set reps to 0 when the value is changed for characteristic2
                 rda.clearReps();
+                setReps('velo', '-');
                 console.log('Reps set to 0');
             });
 
@@ -351,6 +355,8 @@ function setReps(id, value) {
         console.error("Element with ID '" + id + "' is either not found or not an <h1> element.");
     }
 }
+
+
 
 
 
